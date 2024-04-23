@@ -132,7 +132,7 @@ class PrivateUserTests(TestCase):
             name='Conta Teste'
         )
         self.client = APIClient()
-        self.client.force_authentication(user=self.user)
+        self.client.force_authenticate(user=self.user)
 
     def test_recuperar_perfil_sucesso(self):
         """Testa a recuperação do perfil logado."""
