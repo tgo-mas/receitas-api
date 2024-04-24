@@ -1,8 +1,12 @@
 """
 Testes para os models do projeto.
 """
+from decimal import Decimal
+
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+
+from core import models
 
 
 class ModelsTeste(TestCase):
@@ -46,3 +50,19 @@ class ModelsTeste(TestCase):
 
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
+
+    def test_criar_receita(self):
+        """Testa a criação de uma receita"""
+        user = get_user_model().objects.create_user(
+            'test@example.com',
+            'senhateste123',
+        )
+        receita = models.Receita.objects.create(
+            user=user,
+            nome='Teste de receita',
+            tempo_preparo=5,
+            preco=Decimal('5.50'),
+            descricao='Teste de receita descrição',
+        )
+
+        self.assertEqual(str(receita), receita.nome)
