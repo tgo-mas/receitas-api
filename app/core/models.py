@@ -57,6 +57,19 @@ class Receita(models.Model):
     tempo_preparo = models.IntegerField()
     preco = models.DecimalField(max_digits=5, decimal_places=2)
     link = models.CharField(max_length=255, blank=True)
+    categoria = models.ManyToManyField('Categoria')
+
+    def __str__(self):
+        return self.nome
+
+
+class Categoria(models.Model):
+    """Categoria para filtrar receitas."""
+    nome = models.CharField(max_length=255)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return self.nome

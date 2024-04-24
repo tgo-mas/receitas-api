@@ -9,6 +9,11 @@ from django.contrib.auth import get_user_model
 from core import models
 
 
+def create_user(email='test@example.com', password='senhateste123'):
+    """Cria e retorna um novo usuário."""
+    return get_user_model().objects.create(email=email, password=password)
+
+
 class ModelsTeste(TestCase):
     """Testa os models"""
 
@@ -66,3 +71,10 @@ class ModelsTeste(TestCase):
         )
 
         self.assertEqual(str(receita), receita.nome)
+
+    def test_criar_categoria(self):
+        """Testa a criação de categoria."""
+        user = create_user()
+        tag = models.Categoria.objects.create(user=user, nome='TagTeste')
+
+        self.assertEqual(str(tag), tag.nome)
