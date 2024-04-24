@@ -40,6 +40,7 @@ def create_receita(user, **params):
     receita = Receita.objects.create(user=user, **defaults)
     return receita
 
+
 def create_user(**params):
     """Cria e retorna um novo usuário."""
     return get_user_model().objects.create(**params)
@@ -168,14 +169,17 @@ class PrivateReceitaTestes(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         receita.refresh_from_db()
-        
+
         for k, v in payload.items():
             self.assertEqual(getattr(receita, k), v)
         self.assertEqual(receita.user, self.user)
 
     def test_erro_atualizar_user(self):
-        """Testa se tentar atualizar o user de uma receita retorna erro."""
-        novo_user = create_user(email='user2@example.com', password='senhasegundo')
+        """Testa se atualizar o user de uma receita retorna erro."""
+        novo_user = create_user(
+            email='user2@example.com',
+            password='senhasegundo'
+        )
         receita = create_receita(user=self.user)
 
         payload = {
@@ -186,7 +190,7 @@ class PrivateReceitaTestes(TestCase):
         receita.refresh_from_db()
 
         self.assertEqual(receita.user, self.user)
-    
+
     def test_excluir_receita(self):
         """Testa a exclusão de receitas."""
         receita = create_receita(user=self.user)
@@ -200,7 +204,10 @@ class PrivateReceitaTestes(TestCase):
 
     def test_erro_excluir_receitas_de_outros(self):
         """Testa tentar ver receitas de outros usuários (erro)"""
-        novo_user = create_user(email='novouser@example.com', password='senhanovo')
+        novo_user = create_user(
+            email='novouser@example.com',
+            password='senhanovo'
+        )
         receita = create_receita(user=novo_user)
 
         url = detalhes_url(receita.id)
