@@ -13,3 +13,10 @@ class ReceitaSerializer(serializers.ModelSerializer):
         model = Receita
         fields = ['id', 'nome', 'tempo_preparo', 'preco', 'link']
         read_only_fields = ['id']
+
+
+class DetalhesReceitaSerializer(ReceitaSerializer):
+    """Serializer para detalhes de Receita."""
+
+    class Meta(ReceitaSerializer.Meta):
+        fields = ReceitaSerializer.Meta.fields + ['descricao']

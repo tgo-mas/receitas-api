@@ -12,14 +12,22 @@ from rest_framework.test import APIClient
 
 from core.models import Receita
 
-from receita.serializers import ReceitaSerializer
+from receita.serializers import (
+    ReceitaSerializer,
+    DetalhesReceitaSerializer,
+)
 
 
 RECEITAS_URL = reverse('receita:receita-list')
 
 
+def detalhes_url(id_receita):
+    """Cria e retorna a URL para a Receita."""
+    return reverse('receita:receita-detail', args=[id_receita])
+
+
 def create_receita(user, **params):
-    """Cria e retorna uma receita teste"""
+    """Cria e retorna uma receita teste."""
     defaults = {
         'nome': 'Teste de receita',
         'tempo_preparo': 23,
@@ -85,4 +93,14 @@ class PrivateReceitaTestes(TestCase):
         serializer = ReceitaSerializer(receitas, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, serializer.data)
+
+    def test_get_detalhes_receita(self):
+        """Testa coletar detalhes de uma receita."""
+        receita = create_receita(user=self.user)
+
+        url = detalhes_url(receita.id)
+        res = self.client.get(url)
+        serializer = DetalhesReceitaSerializer(receita)
+
         self.assertEqual(res.data, serializer.data)
