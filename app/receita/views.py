@@ -1,11 +1,17 @@
 """
 Views para a API de Receitas
 """
-from rest_framework import viewsets
+from rest_framework import (
+    viewsets,
+    mixins
+)
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from core.models import Receita
+from core.models import (
+    Receita,
+    Categoria,
+)
 from receita import serializers
 
 
@@ -30,3 +36,19 @@ class ReceitaViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Cria uma nova receita."""
         serializer.save(user=self.request.user)
+
+
+class CategoriaViewSet(mixins.UpdateModelMixin,
+                       mixins.ListModelMixin,
+                       viewsets.GenericViewSet):
+    """ViewSet para listar categorias."""
+    serializer_class = serializers.CategoriaSerializer
+    queryset = Categoria.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Retorna a lista de categorias do usuário logado."""
+        return Categoria.objects\
+            .filter(user=self.request.user)\
+            .order_by('-nome')

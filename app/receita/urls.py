@@ -10,6 +10,7 @@ from receita import views
 
 router = DefaultRouter()
 router.register('receita', views.ReceitaViewSet)
+router.register('categorias', views.CategoriaViewSet)
 
 app_name = 'receita'
 

@@ -16,9 +16,14 @@ from receita.serializers import CategoriaSerializer
 CATEGORIAS_URL = reverse('receita:categoria-list')
 
 
+def detalhes_url(id):
+    """Cria e retorna uma URL para o id de Receita"""
+    return reverse('receita:categoria-detail', args=[id])
+
+
 def create_user(email='test@example.com', password='senhateste123'):
     """Cria e retorna um novo usuário."""
-    return get_user_model().objects.create(email, password)
+    return get_user_model().objects.create(email=email, password=password)
 
 
 class PublicCategoriaTestes(TestCase):
@@ -48,7 +53,7 @@ class PrivateCategoriaTestes(TestCase):
         Categoria.objects.create(user=self.user, nome='Sobremesa')
 
         res = self.client.get(CATEGORIAS_URL)
-        categorias = Categoria.objects.all().order_by('-name')
+        categorias = Categoria.objects.all().order_by('-nome')
         serializer = CategoriaSerializer(categorias, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
@@ -69,3 +74,15 @@ class PrivateCategoriaTestes(TestCase):
         self.assertEqual(len(res.data), 1)
         self.assertEqual(res.data[0]['nome'], categoria.nome)
         self.assertEqual(res.data[0]['id'], categoria.id)
+
+    def test_atualizar_categoria(self):
+        """Testa a atualização de categoria."""
+        categoria = Categoria.objects.create(user=self.user, nome='Ceia')
+
+        url = detalhes_url(categoria.id)
+        payload = {'nome': 'Lanche da madrugada'}
+        res = self.client.put(url, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        categoria.refresh_from_db()
+        self.assertEqual(categoria.nome, payload['nome'])
