@@ -270,3 +270,56 @@ class PrivateReceitaTestes(TestCase):
                 nome=categoria['nome']
             ).exists()
             self.assertTrue(existe)
+
+    def test_criar_categoria_ao_atualizar_receita(self):
+        """Testa a criação de categorias."""
+        receita = create_receita(user=self.user)
+
+        payload = {
+            'categorias': [
+                {'nome': 'Almoço'},
+                {'nome': 'Rápido'},
+            ]
+        }
+        url = detalhes_url(receita.id)
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        nova_categoria = Categoria.objects.get(user=self.user, nome='Almoço')
+        self.assertIn(nova_categoria, receita.categorias.all())
+
+    def test_atualizar_receita_adicionar_categoria(self):
+        """Testa atualizar uma receita adicionando categoria existente."""
+        cafe = Categoria.objects.create(user=self.user, nome='Café da manhã')
+        receita = create_receita(user=self.user)
+        receita.categorias.add(cafe)
+
+        almoco = Categoria.objects.create(user=self.user, nome='Almoço')
+        payload = {
+            'categorias': [
+                {'nome': 'Almoço'}
+            ]
+        }
+        url = detalhes_url(receita.id)
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn(almoco, receita.categorias.all())
+        self.assertNotIn(cafe, receita.categorias.all())
+
+    def test_limpar_categorias(self):
+        """Testa limpar as categorias de uma receita."""
+        categoria = Categoria.objects.create(user=self.user, nome='Ceia')
+        receita = Receita.objects.create(
+            user=self.user,
+            tempo_preparo=30,
+            preco=Decimal('5.50')
+        )
+        receita.categorias.add(categoria)
+
+        payload = {'categorias': []}
+        url = detalhes_url(receita.id)
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(receita.categorias.count(), 0)
