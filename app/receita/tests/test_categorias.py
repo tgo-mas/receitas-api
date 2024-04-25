@@ -86,3 +86,14 @@ class PrivateCategoriaTestes(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         categoria.refresh_from_db()
         self.assertEqual(categoria.nome, payload['nome'])
+
+    def test_exclui_categoria(self):
+        """Testa excluir uma categoria."""
+        categoria = Categoria.objects.create(user=self.user, nome='Salgado')
+
+        url = detalhes_url(categoria.id)
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        categorias = Categoria.objects.filter(user=self.user)
+        self.assertFalse(categorias.exists())

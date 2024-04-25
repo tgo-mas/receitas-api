@@ -57,7 +57,7 @@ class Receita(models.Model):
     tempo_preparo = models.IntegerField()
     preco = models.DecimalField(max_digits=5, decimal_places=2)
     link = models.CharField(max_length=255, blank=True)
-    categoria = models.ManyToManyField('Categoria')
+    categorias = models.ManyToManyField('Categoria')
 
     def __str__(self):
         return self.nome

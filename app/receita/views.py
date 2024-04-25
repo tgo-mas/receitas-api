@@ -38,7 +38,8 @@ class ReceitaViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 
-class CategoriaViewSet(mixins.UpdateModelMixin,
+class CategoriaViewSet(mixins.DestroyModelMixin,
+                       mixins.UpdateModelMixin,
                        mixins.ListModelMixin,
                        viewsets.GenericViewSet):
     """ViewSet para listar categorias."""

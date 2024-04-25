@@ -10,8 +10,10 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Receita
-
+from core.models import (
+    Receita,
+    Categoria,
+)
 from receita.serializers import (
     ReceitaSerializer,
     DetalhesReceitaSerializer,
@@ -215,3 +217,56 @@ class PrivateReceitaTestes(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(Receita.objects.filter(id=receita.id).exists())
+
+    def test_criar_receita_com_categorias(self):
+        """Testa criar receitas com novas categorias."""
+        payload = {
+            'nome': 'Strogonoff',
+            'tempo_preparo': 30,
+            'preco': Decimal('10.20'),
+            'categorias': [
+                {'nome': 'Caldo'},
+                {'nome': 'Cozinha Russa'},
+            ]
+        }
+
+        res = self.client.post(RECEITAS_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        receitas = Receita.objects.filter(user=self.user)
+        self.assertEqual(receitas.count(), 1)
+        receita = receitas[0]
+        self.assertEqual(receita.categorias.count(), 2)
+        for categoria in payload['categorias']:
+            existe = receita.categorias.filter(
+                user=self.user,
+                nome=categoria['nome']
+            ).exists()
+            self.assertTrue(existe)
+
+    def test_criar_receita_com_categoria_existente(self):
+        """Testa a criação de receitas com categorias existentes."""
+        indiano = Categoria.objects.create(user=self.user, nome='Indiana')
+        payload = {
+            'nome': 'Frango curry',
+            'tempo_preparo': 25,
+            'preco': Decimal('9.90'),
+            'categorias': [
+                {'nome': 'Indiana'},
+                {'nome': 'Apimentada'},
+            ]
+        }
+        res = self.client.post(RECEITAS_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        receitas = Receita.objects.filter(user=self.user)
+        self.assertEqual(receitas.count(), 1)
+        receita = receitas[0]
+        self.assertEqual(receita.categorias.count(), 2)
+        self.assertIn(indiano, receita.categorias.all())
+        for categoria in payload['categorias']:
+            existe = receita.categorias.filter(
+                user=self.user,
+                nome=categoria['nome']
+            ).exists()
+            self.assertTrue(existe)
