@@ -58,6 +58,7 @@ class Receita(models.Model):
     preco = models.DecimalField(max_digits=5, decimal_places=2)
     link = models.CharField(max_length=255, blank=True)
     categorias = models.ManyToManyField('Categoria')
+    ingredientes = models.ManyToManyField('Ingrediente')
 
     def __str__(self):
         return self.nome
@@ -65,6 +66,18 @@ class Receita(models.Model):
 
 class Categoria(models.Model):
     """Categoria para filtrar receitas."""
+    nome = models.CharField(max_length=255)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+        return self.nome
+
+
+class Ingrediente(models.Model):
+    """Ingredientes usados na receita."""
     nome = models.CharField(max_length=255)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

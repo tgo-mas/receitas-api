@@ -57,7 +57,7 @@ class ModelsTeste(TestCase):
         self.assertTrue(user.is_staff)
 
     def test_criar_receita(self):
-        """Testa a criação de uma receita"""
+        """Testa a criação de uma receita."""
         user = get_user_model().objects.create_user(
             'test@example.com',
             'senhateste123',
@@ -75,6 +75,13 @@ class ModelsTeste(TestCase):
     def test_criar_categoria(self):
         """Testa a criação de categoria."""
         user = create_user()
-        tag = models.Categoria.objects.create(user=user, nome='TagTeste')
+        categoria = models.Categoria.objects.create(user=user, nome='categoriaTeste')
 
-        self.assertEqual(str(tag), tag.nome)
+        self.assertEqual(str(categoria), categoria.nome)
+
+    def test_criar_ingrediente(self):
+        """Testa a criação de ingrediente."""
+        user = create_user()
+        ingrediente = models.Ingrediente.objects.create(user=user, nome='ingredienteTeste')
+
+        self.assertEqual(str(ingrediente), ingrediente.nome)
