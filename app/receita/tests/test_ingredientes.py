@@ -86,3 +86,13 @@ class PrivateIngredienteTestes(TestCase):
         self.assertEqual(len(res.data), 1)
         self.assertEqual(res.data[0]['nome'], ing.nome)
         self.assertEqual(res.data[0]['id'], ing.id)
+
+    def test_atualizar_ingrediente(self):
+        """Testa a atualização de ingrediente."""
+        ing = Ingrediente.objects.create(user=self.user, nome='Banana')
+
+        payload = {'nome': 'Limão'}
+        res = self.client.put(detalhes_url(ing.id) ,payload, format='json')
+        ing.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(ing.nome, res.data['nome'])
