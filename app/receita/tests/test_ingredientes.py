@@ -62,9 +62,8 @@ class PrivateIngredienteTestes(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         ingredientes = Ingrediente.objects.all().order_by('-nome')
-        serializer = IngredienteSerializer(ingredientes)
-        for k, v in res.data.items():
-            self.assertEqual(getattr(serializer.data, k), v)
+        serializer = IngredienteSerializer(ingredientes, many=True)
+        self.assertEqual(res.data, serializer.data)
 
     def test_ingredientes_privados(self):
         """Testa se os ingredientes de outro usuário são ocultados."""
@@ -82,8 +81,8 @@ class PrivateIngredienteTestes(TestCase):
         )
 
         res = self.client.get(INGREDIENTES_URL)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-        self.assertEqual(res.data.count(), 1)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res.data), 1)
         self.assertEqual(res.data[0]['nome'], ing.nome)
         self.assertEqual(res.data[0]['id'], ing.id)

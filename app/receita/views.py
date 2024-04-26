@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from core.models import (
     Receita,
     Categoria,
+    Ingrediente,
 )
 from receita import serializers
 
@@ -51,5 +52,20 @@ class CategoriaViewSet(mixins.DestroyModelMixin,
     def get_queryset(self):
         """Retorna a lista de categorias do usuário logado."""
         return Categoria.objects\
+            .filter(user=self.request.user)\
+            .order_by('-nome')
+
+
+class IngredienteViewSet(mixins.ListModelMixin,
+                         viewsets.GenericViewSet):
+    """ViewSet para a listagem de ingredientes."""
+    serializer_class = serializers.IngredienteSerializer
+    queryset = Ingrediente.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Retorna a lista de ingredientes do usuário logado."""
+        return Ingrediente.objects\
             .filter(user=self.request.user)\
             .order_by('-nome')

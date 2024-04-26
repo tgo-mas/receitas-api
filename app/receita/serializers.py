@@ -5,7 +5,8 @@ from rest_framework import serializers
 
 from core.models import (
     Receita,
-    Categoria
+    Categoria,
+    Ingrediente
 )
 
 
@@ -14,6 +15,15 @@ class CategoriaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Categoria
+        fields = ['id', 'nome']
+        read_only_fields = ['id']
+
+
+class IngredienteSerializer(serializers.ModelSerializer):
+    """Serializer para ingredientes de receitas."""
+
+    class Meta:
+        model = Ingrediente
         fields = ['id', 'nome']
         read_only_fields = ['id']
 
