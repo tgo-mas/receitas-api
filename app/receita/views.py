@@ -56,7 +56,8 @@ class CategoriaViewSet(mixins.DestroyModelMixin,
             .order_by('-nome')
 
 
-class IngredienteViewSet(mixins.UpdateModelMixin,
+class IngredienteViewSet(mixins.DestroyModelMixin,
+                         mixins.UpdateModelMixin,
                          mixins.ListModelMixin,
                          viewsets.GenericViewSet):
     """ViewSet para a listagem de ingredientes."""

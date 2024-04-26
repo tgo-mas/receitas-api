@@ -92,7 +92,17 @@ class PrivateIngredienteTestes(TestCase):
         ing = Ingrediente.objects.create(user=self.user, nome='Banana')
 
         payload = {'nome': 'Limão'}
-        res = self.client.put(detalhes_url(ing.id) ,payload, format='json')
-        ing.refresh_from_db()
+        res = self.client.put(detalhes_url(ing.id), payload, format='json')
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(ing.nome, res.data['nome'])
+        ing.refresh_from_db()
+        self.assertEqual(ing.nome, payload['nome'])
+
+    def test_excluir_ingrediente(self):
+        """Testa a exclusão de ingredientes."""
+        ing = Ingrediente.objects.create(user=self.user, nome='Abacaxi')
+
+        res = self.client.delete(detalhes_url(ing.id))
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        ings = Ingrediente.objects.filter(user=self.user)
+        self.assertFalse(ings.exists())
