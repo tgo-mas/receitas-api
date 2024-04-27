@@ -13,6 +13,7 @@ from rest_framework.test import APIClient
 from core.models import (
     Receita,
     Categoria,
+    Ingrediente,
 )
 from receita.serializers import (
     ReceitaSerializer,
@@ -272,7 +273,7 @@ class PrivateReceitaTestes(TestCase):
             self.assertTrue(existe)
 
     def test_criar_categoria_ao_atualizar_receita(self):
-        """Testa a criação de categorias."""
+        """Testa a criação de categorias ao atualizar a receita."""
         receita = create_receita(user=self.user)
 
         payload = {
@@ -288,7 +289,7 @@ class PrivateReceitaTestes(TestCase):
         nova_categoria = Categoria.objects.get(user=self.user, nome='Almoço')
         self.assertIn(nova_categoria, receita.categorias.all())
 
-    def test_atualizar_receita_adicionar_categoria(self):
+    def test_atualizar_receita_categoria_existente(self):
         """Testa atualizar uma receita adicionando categoria existente."""
         cafe = Categoria.objects.create(user=self.user, nome='Café da manhã')
         receita = create_receita(user=self.user)
@@ -323,3 +324,56 @@ class PrivateReceitaTestes(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(receita.categorias.count(), 0)
+
+    def test_criar_receita_com_ingredientes(self):
+        """Testa criar uma receita com novos ingredientes."""
+        payload = {
+            'nome': 'Macarrão',
+            'tempo_preparo': 20,
+            'preco': Decimal('4.60'),
+            'ingredientes': [
+                {'nome': 'Pacote de macarrão'},
+                {'nome': 'Molho de tomate'},
+                {'nome': 'Manteiga'},
+            ]
+        }
+
+        res = self.client.post(RECEITAS_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        receitas = Receita.objects.filter(user=self.user)
+        self.assertEqual(receitas.count(), 1)
+        receita = receitas[0]
+        self.assertEqual(receita.ingredientes.count(), 2)
+        for ingrediente in payload['ingredientes']:
+            existe = receita.ingredientes.filter(
+                user=self.user,
+                nome = ingrediente['nome']
+            ).exists()
+            self.assertTrue(existe)
+
+    def test_criar_receita_com_ingrediente_existente(self):
+        """Testa criar uma receita com ingredientes existentes."""
+        ing = Ingrediente.objects.create(user=self.user, nome='Banana')
+        payload = {
+            'nome': 'Bolo de banana',
+            'tempo_preparo': 60,
+            'preco': Decimal('30.00'),
+            'ingredientes': [
+                {'nome': 'Banana'},
+                {'nome': 'Farinha de trigo'},
+            ]
+        }
+
+        res = self.client.post(RECEITAS_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        receitas = Receita.objects.filter(user=self.user)
+        self.assertEqual(receitas.count(), 1)
+        receita = receitas[0]
+        for ingrediente in payload['ingredientes']:
+            existe = receita.ingredientes.filter(
+                user=self.user,
+                nome=ingrediente['nome']
+            ).exists()
+            self.assertTrue(existe)
