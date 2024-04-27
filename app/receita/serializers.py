@@ -31,11 +31,30 @@ class IngredienteSerializer(serializers.ModelSerializer):
 class ReceitaSerializer(serializers.ModelSerializer):
     """Serializer para Receita."""
     categorias = CategoriaSerializer(many=True, required=False)
+    ingredientes = IngredienteSerializer(many=True, required=False)
 
     class Meta:
         model = Receita
-        fields = ['id', 'nome', 'tempo_preparo', 'preco', 'link', 'categorias']
+        fields = [
+            'id',
+            'nome',
+            'tempo_preparo',
+            'preco',
+            'link',
+            'categorias',
+            'ingredientes'
+        ]
         read_only_fields = ['id']
+
+    def _get_or_create_ingredientes(self, ingredientes, receita):
+        """Recupera ou cria ingredientes."""
+        auth_user = self.context['request'].user
+        for ingrediente in ingredientes:
+            ing_obj, created = Ingrediente.objects.get_or_create(
+                user=auth_user,
+                **ingrediente
+            )
+            receita.ingredientes.add(ing_obj)
 
     def _get_or_create_categorias(self, categorias, receita):
         """Recupera ou cria categorias."""
@@ -50,8 +69,10 @@ class ReceitaSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """Cria uma nova receita."""
         categorias = validated_data.pop('categorias', [])
+        ingredientes = validated_data.pop('ingredientes', [])
         receita = Receita.objects.create(**validated_data)
         self._get_or_create_categorias(categorias, receita)
+        self._get_or_create_ingredientes(ingredientes, receita)
 
         return receita
 

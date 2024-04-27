@@ -344,17 +344,17 @@ class PrivateReceitaTestes(TestCase):
         receitas = Receita.objects.filter(user=self.user)
         self.assertEqual(receitas.count(), 1)
         receita = receitas[0]
-        self.assertEqual(receita.ingredientes.count(), 2)
+        self.assertEqual(receita.ingredientes.count(), 3)
         for ingrediente in payload['ingredientes']:
             existe = receita.ingredientes.filter(
                 user=self.user,
-                nome = ingrediente['nome']
+                nome=ingrediente['nome']
             ).exists()
             self.assertTrue(existe)
 
     def test_criar_receita_com_ingrediente_existente(self):
         """Testa criar uma receita com ingredientes existentes."""
-        ing = Ingrediente.objects.create(user=self.user, nome='Banana')
+        Ingrediente.objects.create(user=self.user, nome='Banana')
         payload = {
             'nome': 'Bolo de banana',
             'tempo_preparo': 60,
