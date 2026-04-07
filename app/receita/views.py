@@ -38,36 +38,26 @@ class ReceitaViewSet(viewsets.ModelViewSet):
         """Cria uma nova receita."""
         serializer.save(user=self.request.user)
 
-
-class CategoriaViewSet(mixins.DestroyModelMixin,
-                       mixins.UpdateModelMixin,
-                       mixins.ListModelMixin,
-                       viewsets.GenericViewSet):
-    """ViewSet para listar categorias."""
-    serializer_class = serializers.CategoriaSerializer
-    queryset = Categoria.objects.all()
+class BaseReceitaAttrViewSet(mixins.DestroyModelMixin,
+                             mixins.UpdateModelMixin,
+                             mixins.ListModelMixin,
+                             viewsets.GenericViewSet):
+    '''ViewSet base para atributos de receitas.'''
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         """Retorna a lista de categorias do usuário logado."""
-        return Categoria.objects\
+        return self.queryset\
             .filter(user=self.request.user)\
-            .order_by('-nome')
+            .order_by('-nome')  
 
+class CategoriaViewSet(BaseReceitaAttrViewSet):
+    """ViewSet para listar categorias."""
+    serializer_class = serializers.CategoriaSerializer
+    queryset = Categoria.objects.all()
 
-class IngredienteViewSet(mixins.DestroyModelMixin,
-                         mixins.UpdateModelMixin,
-                         mixins.ListModelMixin,
-                         viewsets.GenericViewSet):
+class IngredienteViewSet(BaseReceitaAttrViewSet):
     """ViewSet para a listagem de ingredientes."""
     serializer_class = serializers.IngredienteSerializer
     queryset = Ingrediente.objects.all()
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        """Retorna a lista de ingredientes do usuário logado."""
-        return Ingrediente.objects\
-            .filter(user=self.request.user)\
-            .order_by('-nome')

@@ -79,9 +79,14 @@ class ReceitaSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         """Atualiza uma receita."""
         categorias = validated_data.pop('categorias', None)
+        ingredientes = validated_data.pop('ingredientes', None)
+
         if categorias is not None:
             instance.categorias.clear()
             self._get_or_create_categorias(categorias, instance)
+        if ingredientes is not None:
+            instance.ingredientes.clear()
+            self._get_or_create_ingredientes(ingredientes, instance)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
