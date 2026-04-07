@@ -87,7 +87,7 @@ class PrivateCategoriaTestes(TestCase):
         categoria.refresh_from_db()
         self.assertEqual(categoria.nome, payload['nome'])
 
-    def test_exclui_categoria(self):
+    def test_excluir_categoria(self):
         """Testa excluir uma categoria."""
         categoria = Categoria.objects.create(user=self.user, nome='Salgado')
 

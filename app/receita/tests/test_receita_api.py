@@ -377,3 +377,49 @@ class PrivateReceitaTestes(TestCase):
                 nome=ingrediente['nome']
             ).exists()
             self.assertTrue(existe)
+
+    def test_criar_ingrediente_no_update(self):
+        '''Testa a criação de ingrediente ao atualizar uma receita.'''
+
+        receita = create_receita(user=self.user)
+
+        payload = {
+            'ingredientes': [{'nome': 'Limões'}]
+        }
+        url = detalhes_url(receita.id)
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        novo_ingrediente = Ingrediente.objects.get(user=self.user, nome='Limões')
+        self.assertIn(novo_ingrediente, receita.ingredientes.all())
+
+    def test_atribuir_ingrediente_no_update(self):
+        '''Testa a atribuição de um ingrediente existente ao atualizar uma receita.'''
+
+        ingrediente1 = Ingrediente.objects.create(user=self.user, nome='Pimenta')
+        receita = create_receita(user=self.user) 
+        receita.ingredientes.add(ingrediente1)
+
+        ingrediente2 = Ingrediente.objects.create(user=self.user, nome='Chilli')
+        payload = {'ingredientes': [{'nome': 'Chilli'}]}
+        url = detalhes_url(receita.id)
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn(ingrediente2, receita.ingredientes.all())
+        self.assertNotIn(ingrediente1, receita.ingredientes.all())
+
+    def test_limpar_ingredientes_receita(self):
+        '''Testa limpar os ingredientes de uma receita.'''
+
+        ingrediente = Ingrediente.objects.create(user=self.user, nome='Alho')
+        receita = create_receita(user=self.user)
+        receita.ingredientes.add(ingrediente)
+
+        payload = {'ingredientes': []}
+        url = detalhes_url(receita.id)
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(receita.ingredientes.count, 0)
+
