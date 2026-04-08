@@ -1,6 +1,9 @@
 """
 Models para o Banco de Dados
 """
+import uuid
+import os
+
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import (
@@ -9,6 +12,12 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 
+def imagem_receita_file_path(instance, filename):
+    '''Gera um caminho para o arquivo de imagem da receita.'''
+    ext = os.path.splitext(filename)[1]
+    filename = f'{uuid.uuid4()}{ext}'
+
+    return os.path.join('uploads', 'receita', filename)
 
 class UserManager(BaseUserManager):
     """Administrador de usuários"""
@@ -59,6 +68,7 @@ class Receita(models.Model):
     link = models.CharField(max_length=255, blank=True)
     categorias = models.ManyToManyField('Categoria')
     ingredientes = models.ManyToManyField('Ingrediente')
+    image = models.ImageField(null=True, upload_to=imagem_receita_file_path)
 
     def __str__(self):
         return self.nome
