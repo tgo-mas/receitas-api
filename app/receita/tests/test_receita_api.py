@@ -34,7 +34,7 @@ def detalhes_url(id_receita):
 
 def imagem_upload_url(receita_url):
     '''Cria e retorna uma url de upload de imagem.'''
-    return reverse('receita:receita-upload-imagem', receita_url)
+    return reverse('receita:receita-upload-imagem', args=[receita_url])
 
 def create_receita(user, **params):
     """Cria e retorna uma receita teste."""
@@ -447,7 +447,7 @@ class ImagemUploadTestes(TestCase):
 
     def test_upload_imagem(self):
         '''Testa o upload de imagem em uma receita.'''
-        url = imagem_upload_url(self.recipe.id)
+        url = imagem_upload_url(self.receita.id)
 
         with tempfile.NamedTemporaryFile(suffix='.jpg') as arq_imagem: 
             img = Image.new('RGB', (10, 10))

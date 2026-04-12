@@ -101,3 +101,11 @@ class DetalhesReceitaSerializer(ReceitaSerializer):
 
     class Meta(ReceitaSerializer.Meta):
         fields = ReceitaSerializer.Meta.fields + ['descricao']
+
+class ImagemReceitaSerializer(serializers.ModelSerializer):
+    '''Serializer para imagem de uma Receita'''
+    class Meta:
+        model = Receita
+        fields = ['id', 'imagem']
+        read_only_fields = ['id']
+        extra_kwargs = {'imagem': {'required': 'True'}}
