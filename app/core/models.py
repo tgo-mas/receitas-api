@@ -68,7 +68,7 @@ class Receita(models.Model):
     link = models.CharField(max_length=255, blank=True)
     categorias = models.ManyToManyField('Categoria')
     ingredientes = models.ManyToManyField('Ingrediente')
-    image = models.ImageField(null=True, upload_to=imagem_receita_file_path)
+    imagem = models.ImageField(null=True, upload_to=imagem_receita_file_path)
 
     def __str__(self):
         return self.nome

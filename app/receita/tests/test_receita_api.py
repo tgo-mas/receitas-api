@@ -2,6 +2,10 @@
 Testes para a API de Receitas
 """
 from decimal import Decimal
+import tempfile
+import os
+
+from PIL import Image
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -28,6 +32,9 @@ def detalhes_url(id_receita):
     """Cria e retorna a URL para a Receita."""
     return reverse('receita:receita-detail', args=[id_receita])
 
+def imagem_upload_url(receita_url):
+    '''Cria e retorna uma url de upload de imagem.'''
+    return reverse('receita:receita-upload-imagem', receita_url)
 
 def create_receita(user, **params):
     """Cria e retorna uma receita teste."""
@@ -423,3 +430,43 @@ class PrivateReceitaTestes(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(receita.ingredientes.count(), 0)
 
+class ImagemUploadTestes(TestCase):
+    '''Testes para a API de upload de imagem'''
+    
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            'user@example.com',
+            'senha123'
+        )
+        self.client.force_authenticate(self.user)
+        self.receita = create_receita(user=self.user)
+
+    def tearDown(self):
+        self.receita.imagem.delete()
+
+    def test_upload_imagem(self):
+        '''Testa o upload de imagem em uma receita.'''
+        url = imagem_upload_url(self.recipe.id)
+
+        with tempfile.NamedTemporaryFile(suffix='.jpg') as arq_imagem: 
+            img = Image.new('RGB', (10, 10))
+            img.save(arq_imagem, format='JPEG')
+            arq_imagem.seek(0)
+            payload = {'imagem': arq_imagem}
+            res = self.client.post(url, payload, format='multipart')
+
+        self.receita.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn('imagem', res.data)
+        self.assertTrue(os.path.exists(self.receita.imagem.path))
+
+    def test_upload_imagem_bad_request(self):
+        '''Testa o upload de imagem inválida.'''
+        url = imagem_upload_url(self.receita.id)
+        payload = {
+            'image': 'naoehumaimagem'
+        }
+        res = self.client.post(url, payload, format='multipart')
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
