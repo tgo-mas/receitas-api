@@ -8,7 +8,10 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Categoria
+from core.models import (
+    Categoria,
+    Receita,
+)
 
 from receita.serializers import CategoriaSerializer
 
@@ -97,3 +100,48 @@ class PrivateCategoriaTestes(TestCase):
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
         categorias = Categoria.objects.filter(user=self.user)
         self.assertFalse(categorias.exists())
+
+    def test_filtrar_categorias_por_receita(self):
+        '''Testa o filtro de categorias atribuidas a receitas.'''
+        cat1 = Categoria.objects.create(user=self.user, nome='Saudável')
+        cat2 = Categoria.objects.create(user=self.user, nome='Vegano')
+
+        r1 = Receita.objects.create(
+            user=self.user,
+            nome='Ovo mexido',
+            tempo_preparo=7,
+            preco=5.0    
+        )
+        r1.categorias.add(cat1)
+
+        res = self.client.get(CATEGORIAS_URL, {'assigned_only': 1})
+
+        s1 = CategoriaSerializer(cat1)
+        s2 = CategoriaSerializer(cat2)
+
+        self.assertIn(s1.data, res.data)
+        self.assertNotIn(s2.data, res.data)
+
+    def test_filtrar_categorias_unico(self):
+        '''Testa se o filtro de categorias não retorna categorias repetidas.'''
+        cat1 = Categoria.objects.create(user=self.user, nome='Vegetariano')
+        Categoria.objects.create(user=self.user, nome='Vegano')
+
+        r1 = Receita.objects.create(
+            user=self.user,
+            nome='Macarrão ao molho branco',
+            tempo_preparo=30,
+            preco=45.00
+        )
+        r2 = Receita.objects.create(
+            user=self.user,
+            nome='Pizza de marguerita',
+            tempo_preparo=40,
+            preco=50.0
+        )
+        r1.categorias.add(cat1)
+        r2.categorias.add(cat1)
+
+        res = self.client.get(CATEGORIAS_URL, {'assigned_only': 1})
+
+        self.assertEqual(len(res.data), 1)

@@ -95,6 +95,16 @@ class ReceitaViewSet(viewsets.ModelViewSet):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@extend_schema_view(
+    list=extend_schema,
+    parameters=[
+        OpenApiParameter(
+            'assigned_only',
+            OpenApiTypes.INT, enum=[0, 1],
+            description='Filtro para itens associados a receitas.'
+        )
+    ]
+)
 class BaseReceitaAttrViewSet(mixins.DestroyModelMixin,
                              mixins.UpdateModelMixin,
                              mixins.ListModelMixin,
@@ -105,9 +115,17 @@ class BaseReceitaAttrViewSet(mixins.DestroyModelMixin,
 
     def get_queryset(self):
         """Retorna a lista de categorias do usuário logado."""
-        return self.queryset\
+        assigned_only = bool(
+            int(self.request.query_params.get('assigned_only', 0))
+        )
+
+        queryset = self.queryset
+        if assigned_only:
+            queryset = queryset.filter(receita__isnull=False)
+
+        return queryset\
             .filter(user=self.request.user)\
-            .order_by('-nome')  
+            .order_by('-nome').distinct()
 
 class CategoriaViewSet(BaseReceitaAttrViewSet):
     """ViewSet para listar categorias."""
