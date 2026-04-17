@@ -444,7 +444,7 @@ class PrivateReceitaTestes(TestCase):
         r1.categorias.add(categoria3)
         r2.categorias.add(categoria2)
 
-        params = {'tags': f'{categoria1.id},{categoria2.id},{categoria3.id}'}
+        params = {'categorias': f'{categoria1.id},{categoria2.id},{categoria3.id}'}
         res = self.client.get(RECEITAS_URL, params)
 
         s1 = ReceitaSerializer(r1)
@@ -466,7 +466,7 @@ class PrivateReceitaTestes(TestCase):
         r1.ingredientes.add(ing1)
         r2.ingredientes.add(ing2)
 
-        params = {'ingredientes': f'{ing1},{ing2}'}
+        params = {'ingredientes': f'{ing1.id},{ing2.id}'}
         res = self.client.get(RECEITAS_URL, params)
 
         s1 = ReceitaSerializer(r1)
