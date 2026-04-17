@@ -430,6 +430,54 @@ class PrivateReceitaTestes(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(receita.ingredientes.count(), 0)
 
+    def test_filtro_por_categoria(self):
+        '''Testa o filtro de receitas por categoria.'''
+        r1 = create_receita(user=self.user, nome='Curry vegetariano tailandês')
+        r2 = create_receita(user=self.user, nome='Berinjela com Tahini')
+        r3 = create_receita(user=self.user, nome='Filé de tilápia com fritas')
+
+        categoria1 = Categoria.objects.create(user=self.user, nome='Vegano')
+        categoria2 = Categoria.objects.create(user=self.user, nome='Vegetariano')
+        categoria3 = Categoria.objects.create(user=self.user, nome='Tailândia')
+
+        r1.categorias.add(categoria1)
+        r1.categorias.add(categoria3)
+        r2.categorias.add(categoria2)
+
+        params = {'tags': f'{categoria1.id},{categoria2.id},{categoria3.id}'}
+        res = self.client.get(RECEITAS_URL, params)
+
+        s1 = ReceitaSerializer(r1)
+        s2 = ReceitaSerializer(r2)
+        s3 = ReceitaSerializer(r3)
+
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
+
+    def test_filtro_por_ingredientes(self):
+        '''Testa a filtragem de receitas por ingredientes.'''
+        r1 = create_receita(user=self.user, nome='Feijoada')
+        r2 = create_receita(user=self.user, nome='Strogonoff de frango')
+        r3 = create_receita(user=self.user, nome='Macarronada')
+
+        ing1 = Ingrediente.objects.create(user=self.user, nome='Feijão')
+        ing2 = Ingrediente.objects.create(user=self.user, nome='Frango')
+        r1.ingredientes.add(ing1)
+        r2.ingredientes.add(ing2)
+
+        params = {'ingredientes': f'{ing1},{ing2}'}
+        res = self.client.get(RECEITAS_URL, params)
+
+        s1 = ReceitaSerializer(r1)
+        s2 = ReceitaSerializer(r2)
+        s3 = ReceitaSerializer(r3)
+
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
+
+
 class ImagemUploadTestes(TestCase):
     '''Testes para a API de upload de imagem'''
     
